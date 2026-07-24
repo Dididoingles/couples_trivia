@@ -5,752 +5,859 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>How Well Do You Know Me?</title>
     
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+       * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        body {
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #5e17eb, #cca1dd);
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            display: flex;
-            justify-content: center;
+    /* Scrollbar Estilizada - Glassmorphism */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        backdrop-filter: blur(5px);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+        width: 100vw;
+        height: 100dvh;
+        background: linear-gradient(135deg, #5e17eb, #cca1dd);
+        font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        overflow: hidden; /* Evita rolagem dupla no corpo */
+        color: white;
+    }
+
+    /* Glassmorphism Reusable Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-radius: 30px;
+        box-shadow: 0 20px 40px rgba(94, 23, 235, 0.3);
+    }
+
+    /* Audio Control Button (Global Header) */
+    .audio-control {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s;
+    }
+
+    .audio-control:active {
+        transform: scale(0.9);
+    }
+
+    /* Screens Containers (Fixed & Independent Scroll) */
+    .screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 60px 15px 40px 15px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        transform: translateY(10px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
+    }
+
+    .screen.active {
+        opacity: 1;
+        pointer-events: all;
+        transform: translateY(0);
+    }
+
+    /* 1. Landing Screen */
+    #landingScreen {
+        justify-content: center;
+        padding-top: 20px;
+    }
+
+    .landing-title {
+        font-size: clamp(1.8rem, 6vw, 3.2rem);
+        font-weight: 300;
+        letter-spacing: 3px;
+        text-align: center;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(94, 23, 235, 0.4);
+    }
+
+    .landing-subtitle {
+        font-size: clamp(0.95rem, 3vw, 1.2rem);
+        opacity: 0.9;
+        margin-bottom: 35px;
+        text-align: center;
+        font-weight: 300;
+    }
+
+    .landing-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+        max-width: 280px;
+    }
+
+    /* Buttons Standard */
+    .btn {
+        background: rgba(255, 255, 255, 0.25);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        font-size: 1.05rem;
+        padding: 12px 24px;
+        border-radius: 50px;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 500;
+        text-transform: lowercase;
+    }
+
+    .btn-primary {
+        background: white;
+        color: #5e17eb;
+        border-color: white;
+    }
+
+    .btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Modal How to Play */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100dvh;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+    }
+
+    .modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .modal-card {
+        max-width: 500px;
+        width: 100%;
+        padding: 25px;
+        position: relative;
+        max-height: 85dvh;
+        overflow-y: auto;
+    }
+
+    .modal-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: 400;
+        letter-spacing: 2px;
+    }
+
+    .instruction-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .instruction-step i {
+        font-size: 1.2rem;
+        margin-top: 3px;
+        width: 25px;
+        text-align: center;
+    }
+
+    .close-modal-btn {
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    /* 2. Setup Screen */
+    #setupScreen {
+        justify-content: center;
+        padding-top: 20px;
+    }
+
+    .player-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+        max-width: 350px;
+        margin-bottom: 25px;
+    }
+
+    .player-input-card {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .avatar-icon {
+        font-size: 1.4rem;
+        width: 42px;
+        height: 42px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .player-input {
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 30px;
+        padding: 10px 15px;
+        width: 100%;
+        color: white;
+        font-size: 1rem;
+        outline: none;
+        text-align: center;
+    }
+
+    .player-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* 3. Game Screen */
+    .game-screen {
+        padding-top: 70px;
+        max-width: 900px;
+        margin: 0 auto;
+        left: 50%;
+        transform: translateX(-50%) translateY(10px);
+    }
+
+    .game-screen.active {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .game-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .question-counter {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .scoreboard {
+        width: 100%;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .player-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 40%;            
+}
+.player-score span:not(.score-value) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;           
+}
+
+    .score-value {
+        background: rgba(255, 255, 255, 0.25);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .game-main-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    @media (min-width: 768px) {
+        .game-main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             align-items: center;
-            overflow: hidden;
-            position: fixed;
         }
+    }
 
-        /* Player selection screen */
-        .player-screen {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #5e17eb, #cca1dd);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 300;
-            transition: opacity 0.8s ease;
-            padding: 10px;
-        }
+    .question-card {
+        padding: 25px 20px;
+        text-align: center;
+        min-height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .player-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+    .question-text {
+        font-size: clamp(1.15rem, 3vw, 1.5rem);
+        font-weight: 300;
+        line-height: 1.4;
+    }
 
-        .player-title {
-            font-size: min(5vh, 2.5rem);
-            color: white;
-            margin-bottom: min(3vh, 1.5rem);
-            font-weight: 300;
-            letter-spacing: 4px;
-            text-shadow: 2px 2px 4px rgba(94, 23, 235, 0.3);
-        }
+    .players-response-area {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
 
-        .player-inputs {
-            display: flex;
-            gap: min(4vw, 3rem);
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: min(3vh, 1.5rem);
-        }
+    .response-card {
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
 
-        .player-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-radius: 30px;
-            padding: min(3vh, 1.5rem) min(4vw, 2rem);
-            width: min(40vw, 300px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.8rem;
-        }
+    .response-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;        /* Impede que o nome quebre em duas linhas */
+    overflow: hidden;           /* Esconde o texto excedente */
+    text-overflow: ellipsis;   /* Adiciona os "..." no final */
+    max-width: 120px;           /* Tamanho máximo para não empurrar os botões */
+    display: inline-block;
+}
 
-        .player-avatar {
-            width: min(8vh, 60px);
-            height: min(8vh, 60px);
-            background: linear-gradient(135deg, #ffffff, #f0e0ff);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: min(4vh, 2.5rem);
-            color: #5e17eb;
-        }
 
-        .player-input {
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 30px;
-            padding: 0.6rem 1.2rem;
-            width: 100%;
-            color: white;
-            font-size: min(2.5vh, 1rem);
-            text-align: center;
-        }
 
-        .player-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
+    .response-actions {
+        display: flex;
+        gap: 8px;
+    }
 
-        .start-game-btn {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(5px);
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            color: white;
-            font-size: min(3.5vh, 1.5rem);
-            padding: 1rem 3rem;
-            border-radius: 50px;
-            letter-spacing: 4px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
+    .action-btn {
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 8px 14px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
 
-        .start-game-btn:active {
-            background: rgba(255, 255, 255, 0.4);
-            transform: scale(0.95);
-        }
+    .action-btn.correct:hover, .action-btn.correct.selected {
+        background: rgba(46, 204, 113, 0.4);
+        border-color: #2ecc71;
+    }
 
-        /* Game screen */
-        .game-screen {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.8s ease;
-            padding: min(2vh, 15px) min(2vw, 15px);
-            background: linear-gradient(135deg, #5e17eb, #cca1dd);
-        }
+    .action-btn.wrong:hover, .action-btn.wrong.selected {
+        background: rgba(231, 76, 60, 0.4);
+        border-color: #e74c3c;
+    }
 
-        .game-screen.visible {
-            opacity: 1;
-            pointer-events: all;
-        }
+    .action-btn.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
 
-        /* Header with finish button */
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+    .game-footer {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
 
-        .finish-top-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            color: white;
-            font-size: min(2.5vh, 1rem);
-            padding: 0.5rem 1.5rem;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
+    .footer-tag {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        letter-spacing: 1px;
+    }
 
-        .finish-top-btn:active {
-            background: rgba(255, 255, 255, 0.4);
-            transform: scale(0.95);
-        }
+    /* 4. Result Screen */
+    #resultScreen {
+        justify-content: center;
+        padding-top: 20px;
+    }
 
-        .question-counter {
-            color: white;
-            font-size: min(2.2vh, 1rem);
-            opacity: 0.9;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 0.5rem 1.5rem;
-            border-radius: 40px;
-            margin-left: 1rem;
-        }
+    .result-card {
+        padding: 35px 25px;
+        text-align: center;
+        max-width: 450px;
+        width: 100%;
+    }
 
-        /* Scoreboard */
-        .scoreboard {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.8rem min(4vw, 2rem);
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 50px;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            height: min(8vh, 70px);
-        }
+    .result-title {
+        font-size: 1.8rem;
+        font-weight: 300;
+        letter-spacing: 3px;
+        margin-bottom: 20px;
+    }
 
-        .player-score {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex: 1;
-        }
+    .final-scores {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+    }
 
-        .player-name {
-            color: white;
-            font-size: min(2.5vh, 1.2rem);
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: min(20vw, 150px);
-        }
+    .final-player .points {
+        font-size: 2rem;
+        margin-top: 5px;
+        font-weight: 300;
+    }
 
-        .score-value {
-            color: white;
-            font-size: min(3.5vh, 1.8rem);
-            font-weight: 300;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.2rem 1.2rem;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
+    .winner-box {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 15px;
+        border-radius: 20px;
+        margin-bottom: 25px;
+        font-size: 1rem;
+        line-height: 1.4;
+    }
 
-        .vs-divider {
-            color: white;
-            font-size: min(2.5vh, 1.2rem);
-            padding: 0 1rem;
-            opacity: 0.8;
-        }
+   /* 3. Ajuste para telas menores de celular */
+@media (max-width: 480px) {
+    .response-card {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+    }
 
-        /* Main area */
-        .game-main {
-            flex: 1;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: min(2vw, 2rem);
-            min-height: 0;
-            height: calc(100% - 18vh);
-        }
+    .response-name {
+        max-width: 200px;       /
+    }
 
-        /* Question card */
-        .question-card {
-            flex: 0 0 auto;
-            width: min(35vw, 450px);
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            border-radius: 50px;
-            padding: min(3vh, 2rem) min(2vw, 2rem);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 20px 40px rgba(94, 23, 235, 0.3);
-            color: white;
-            animation: cardAppear 0.6s ease-out forwards;
-            opacity: 0;
-            transform: translateX(-30px);
-        }
+    .response-actions {
+        width: 100%;
+        justify-content: center;
+    }
 
-        @keyframes cardAppear {
-            0% {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
+    .action-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
 
-        .question-text {
-            font-size: min(3vh, 1.8rem);
-            text-align: center;
-            font-weight: 300;
-            line-height: 1.4;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(94, 23, 235, 0.3);
-            word-break: break-word;
-        }
-
-        /* Players area */
-        .players-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: min(2vh, 1.5rem);
-            max-width: min(50vw, 600px);
-        }
-
-        .player-response-card {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 40px;
-            padding: min(2.5vh, 1.5rem) min(3vw, 2rem);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            animation: slideIn 0.6s ease-out forwards;
-            opacity: 0;
-            transform: translateX(30px);
-        }
-
-        .player-response-card:nth-child(1) {
-            animation-delay: 0.2s;
-        }
-
-        .player-response-card:nth-child(2) {
-            animation-delay: 0.3s;
-        }
-
-        @keyframes slideIn {
-            0% {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .player-response-name {
-            font-size: min(2.8vh, 1.4rem);
-            font-weight: 500;
-            color: white;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-width: min(15vw, 120px);
-        }
-
-        .response-buttons {
-            display: flex;
-            gap: 0.8rem;
-        }
-
-        .response-btn {
-            padding: 0.8rem 1.5rem;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-radius: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: min(2.2vh, 1rem);
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: min(10vw, 100px);
-            font-weight: 500;
-            backdrop-filter: blur(5px);
-        }
-
-        .response-btn.correct:hover {
-            background: rgba(0, 255, 0, 0.2);
-            border-color: #a5ffa5;
-        }
-
-        .response-btn.wrong:hover {
-            background: rgba(255, 0, 0, 0.2);
-            border-color: #ffa5a5;
-        }
-
-        .response-btn.correct.selected {
-            background: rgba(0, 255, 0, 0.3);
-            border-color: #a5ffa5;
-            transform: scale(1.05);
-        }
-
-        .response-btn.wrong.selected {
-            background: rgba(255, 0, 0, 0.3);
-            border-color: #ffa5a5;
-            transform: scale(1.05);
-        }
-
-        .response-btn:active {
-            transform: scale(0.95);
-        }
-
-        .response-btn.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        /* Footer */
-        .game-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.8rem 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            margin-top: 0.8rem;
-            height: min(6vh, 50px);
-        }
-
-        .kiss-hint {
-            color: white;
-            font-size: min(2.2vh, 0.9rem);
-            font-style: italic;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 0.4rem 1.2rem;
-            border-radius: 40px;
-            backdrop-filter: blur(5px);
-        }
-
-        .reset-btn {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 0.4rem 1.2rem;
-            border-radius: 2rem;
-            font-size: min(2.2vh, 0.9rem);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .reset-btn:active {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0.95);
-        }
-
-        /* Result screen */
-        .result-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(94, 23, 235, 0.8);
-            backdrop-filter: blur(15px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.6s ease;
-            padding: 20px;
-        }
-
-        .result-screen.visible {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .result-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 60px;
-            padding: min(5vh, 40px);
-            max-width: min(80vw, 500px);
-            width: 100%;
-            text-align: center;
-            color: white;
-            box-shadow: 0 30px 50px rgba(0,0,0,0.3);
-        }
-
-        .result-card h2 {
-            font-size: min(5vh, 2.2rem);
-            font-weight: 300;
-            letter-spacing: 4px;
-            margin-bottom: 20px;
-        }
-
-        .final-scores {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-
-        .final-player .name {
-            font-size: min(3vh, 1.2rem);
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-
-        .final-player .points {
-            font-size: min(5vh, 2.5rem);
-            font-weight: 300;
-            background: rgba(255,255,255,0.2);
-            padding: 0.3rem 1.5rem;
-            border-radius: 50px;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-
-        .winner-message {
-            font-size: min(3.5vh, 1.6rem);
-            margin: 20px 0;
-            font-weight: 300;
-            background: rgba(255,255,255,0.15);
-            padding: 15px;
-            border-radius: 50px;
-            line-height: 1.5;
-        }
-
-        .play-again-btn {
-            background: white;
-            border: none;
-            color: #5e17eb;
-            font-size: min(3vh, 1.1rem);
-            padding: 0.8rem 2.5rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-            letter-spacing: 2px;
-        }
-
-        .play-again-btn:active {
-            transform: scale(0.95);
-            background: #f0e0ff;
-        }
-
-        /* Landscape/Portrait */
-        @media (orientation: landscape) {
-            .game-main {
-                flex-direction: row;
-            }
-        }
-
-        @media (orientation: portrait) {
-            .game-main {
-                flex-direction: column;
-                overflow-y: auto;
-            }
-            
-            .question-card {
-                width: 90%;
-                margin-bottom: 1rem;
-            }
-            
-            .players-area {
-                width: 90%;
-                max-width: none;
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- Player selection screen -->
-    <div class="player-screen" id="playerScreen">
-        <h2 class="player-title">✦ who's playing ✦</h2>
+
+    <!-- Audio Elements (Cloudinary Placeholders) -->
+    <!-- Substitua o atributo src pelas URLs dos seus arquivos no Cloudinary -->
+    <audio id="bgMusic" loop preload="auto" src="https://res.cloudinary.com/dbwqwgbtx/video/upload/v1784855073/harumachimusic-fluffy-cute-piano-543960_srlxis.mp3"></audio>
+    <audio id="sfxClick" preload="auto" src="https://res.cloudinary.com/demo/video/upload/v1680000000/click.mp3"></audio>
+    <audio id="sfxCorrect" preload="auto" src="https://res.cloudinary.com/demo/video/upload/v1680000000/correct.mp3"></audio>
+    <audio id="sfxWrong" preload="auto" src="https://res.cloudinary.com/demo/video/upload/v1680000000/wrong.mp3"></audio>
+    <audio id="sfxWin" preload="auto" src="https://res.cloudinary.com/demo/video/upload/v1680000000/win.mp3"></audio>
+
+    <!-- Global Audio Control Button -->
+    <button class="audio-control" id="toggleAudioBtn" aria-label="Toggle Audio">
+        <i class="fa-solid fa-volume-xmark" id="audioIcon"></i>
+    </button>
+
+    <!-- 1. LANDING SCREEN -->
+    <section class="screen active" id="landingScreen">
+        <h1 class="landing-title">✦ How well do you know me? ✦</h1>
+        <p class="landing-subtitle">A couple's trivia game</p>
         
-        <div class="player-inputs">
-            <div class="player-card">
-                <div class="player-avatar">😈</div>
-                <input type="text" class="player-input" id="player1Name" placeholder="Player 1" value="Player 1">
-            </div>
-            
-            <div class="player-card">
-                <div class="player-avatar">😇</div>
-                <input type="text" class="player-input" id="player2Name" placeholder="Player 2" value="Player 2">
-            </div>
+        <div class="landing-actions">
+            <button class="btn btn-primary" id="startFlowBtn">
+                <i class="fa-solid fa-play"></i> Start game
+            </button>
+            <button class="btn" id="openHowToPlayBtn">
+                <i class="fa-solid fa-circle-info"></i> How to play
+            </button>
         </div>
-        
-        <button class="start-game-btn" id="startGameBtn">start</button>
+    </section>
+
+    <!-- MODAL HOW TO PLAY -->
+    <div class="modal-overlay" id="howToPlayModal">
+        <div class="glass-card modal-card">
+            <h3>✦ How to play ✦</h3>
+            <div class="instruction-step">
+                <i class="fa-solid fa-comments"></i>
+                <span>Read the question on the screen out loud to your partner.</span>
+            </div>
+            <div class="instruction-step">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>Say your guess out loud before checking the answer together.</span>
+            </div>
+            <div class="instruction-step">
+                <i class="fa-solid fa-check-double"></i>
+                <span>Click <strong>Got it</strong> if your partner answered correctly, or <strong>Missed</strong> if they failed.</span>
+            </div>
+            <div class="instruction-step">
+                <i class="fa-solid fa-forward"></i>
+                <span>Once both players log their result, the next question will appear!</span>
+            </div>
+            <button class="btn btn-primary close-modal-btn" id="closeHowToPlayBtn">got it!</button>
+        </div>
     </div>
 
-    <!-- Game screen -->
-    <div class="game-screen" id="gameScreen">
-        <!-- Header with finish button -->
+    <!-- 2. PLAYER SETUP SCREEN -->
+    <section class="screen" id="setupScreen">
+        <h2 class="landing-title" style="font-size: 1.8rem; margin-bottom: 25px;">✦ Who's playing? ✦</h2>
+        
+        <div class="player-inputs">
+            <div class="glass-card player-input-card">
+                <div class="avatar-icon"><i class="fa-solid fa-ghost"></i></div>
+                <input type="text" id="player1Name" class="player-input" value="Player 1" placeholder="Player 1">
+            </div>
+            <div class="glass-card player-input-card">
+                <div class="avatar-icon"><i class="fa-solid fa-face-smile-wink"></i></div>
+                <input type="text" id="player2Name" class="player-input" value="Player 2" placeholder="Player 2">
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="confirmPlayersBtn">
+            <i class="fa-solid fa-gamepad"></i> Let's play
+        </button>
+    </section>
+
+    <!-- 3. GAMEPLAY SCREEN -->
+    <section class="screen game-screen" id="gameScreen">
         <div class="game-header">
-            <button class="finish-top-btn" id="finishTopBtn">🏁 finish game</button>
+            <button class="btn" id="finishEarlyBtn" style="padding: 6px 16px; font-size: 0.85rem;">
+                <i class="fa-solid fa-flag-checkered"></i> finish
+            </button>
             <div class="question-counter" id="questionCounter">Question 1 of 50</div>
         </div>
 
-        <!-- Scoreboard -->
-        <div class="scoreboard">
+        <div class="glass-card scoreboard">
             <div class="player-score">
-                <span class="player-name" id="displayPlayer1">Player 1</span>
+                <i class="fa-solid fa-user"></i>
+                <span id="displayPlayer1">Player 1</span>
                 <span class="score-value" id="score1">0</span>
             </div>
-            <span class="vs-divider">VS</span>
+            <span style="opacity: 0.6; font-weight: bold;">VS</span>
             <div class="player-score">
-                <span class="player-name" id="displayPlayer2">Player 2</span>
                 <span class="score-value" id="score2">0</span>
+                <span id="displayPlayer2">Player 2</span>
+                <i class="fa-solid fa-user"></i>
             </div>
         </div>
 
-        <!-- Main area -->
-        <div class="game-main" id="gameMain"></div>
+        <div class="game-main-content">
+            <div class="glass-card question-card">
+                <p class="question-text" id="questionText">Loading question...</p>
+            </div>
+
+            <div class="players-response-area" id="playersArea">
+                <!-- Response Cards injected dynamically -->
+            </div>
+        </div>
 
         <div class="game-footer">
-            <span class="kiss-hint"> Follow @dicarvalho.prof </span>
-            <button class="reset-btn" id="resetBtn">↻ new game</button>
+            <span class="footer-tag">Follow @dicarvalho.prof</span>
+            <button class="btn" id="resetBtn" style="padding: 6px 14px; font-size: 0.8rem;">
+                <i class="fa-solid fa-rotate-right"></i> Restart
+            </button>
         </div>
-    </div>
+    </section>
 
-    <!-- Result screen -->
-    <div class="result-screen" id="resultScreen">
-        <div class="result-card">
-            <h2>✦ result ✦</h2>
+    <!-- 4. RESULT SCREEN -->
+    <section class="screen" id="resultScreen">
+        <div class="glass-card result-card">
+            <h2 class="result-title">✦ Results ✦</h2>
             <div class="final-scores">
                 <div class="final-player">
-                    <div class="name" id="finalName1">Player 1</div>
+                    <div id="finalName1">Player 1</div>
                     <div class="points" id="finalScore1">0</div>
                 </div>
                 <div class="final-player">
-                    <div class="name" id="finalName2">Player 2</div>
+                    <div id="finalName2">Player 2</div>
                     <div class="points" id="finalScore2">0</div>
                 </div>
             </div>
-            <div class="winner-message" id="winnerMessage"></div>
-            <button class="play-again-btn" id="playAgainBtn">play again</button>
+            <div class="winner-box" id="winnerMessage">
+                Winner message goes here!
+            </div>
+            <button class="btn btn-primary" id="playAgainBtn">
+                <i class="fa-solid fa-rotate-right"></i> play again
+            </button>
         </div>
-    </div>
+    </section>
 
     <script>
         (function() {
-            // 50 QUESTIONS ABOUT THE PARTNER - British English
+            // 50 QUESTIONS (Preserved integral list)
             const questions = [
-                // Family & Childhood
                 { question: "How many siblings do I have?", correct: "1 brother" },
                 { question: "What's my birth order among siblings?", correct: "I'm an only child" },
                 { question: "Where was I born?", correct: "London" },
                 { question: "What's my mother's name?", correct: "Margaret" },
                 { question: "What's my father's name?", correct: "James" },
                 { question: "Which city did my parents meet?", correct: "Manchester" },
-                
-                // Food & Drink
                 { question: "What's my favourite food?", correct: "Fish and chips" },
                 { question: "What's my favourite dessert?", correct: "Sticky toffee pudding" },
                 { question: "What's my favourite alcoholic drink?", correct: "Gin and tonic" },
                 { question: "Which fruit do I absolutely hate?", correct: "Jackfruit" },
                 { question: "What's my dream breakfast?", correct: "Full English breakfast" },
                 { question: "Tea or coffee?", correct: "Tea, with milk" },
-                
-                // Entertainment
                 { question: "What's my favourite film?", correct: "Love Actually" },
                 { question: "Which series have I watched more than 3 times?", correct: "Fleabag" },
                 { question: "Which actor do I fancy the most?", correct: "Keira Knightley" },
                 { question: "What's my favourite music genre?", correct: "Britpop" },
                 { question: "Who's my favourite artist?", correct: "Adele" },
                 { question: "What's my favourite British TV show?", correct: "The Crown" },
-                
-                // Personality
                 { question: "What's my biggest fear?", correct: "Heights" },
                 { question: "What annoys me the most?", correct: "Tardiness" },
                 { question: "What's my biggest dream?", correct: "Travel the world" },
                 { question: "What makes me happiest?", correct: "Being with you" },
                 { question: "What's my favourite hobby?", correct: "Reading" },
-                
-                // Relationship
                 { question: "Where did we meet?", correct: "On an app" },
                 { question: "Where was our first date?", correct: "Italian restaurant" },
                 { question: "Who kissed first?", correct: "You did" },
                 { question: "What do I love most about you?", correct: "Your sense of humour" },
                 { question: "What's the most romantic place we've been?", correct: "The beach" },
-                
-                // Preferences
                 { question: "What's my favourite weather?", correct: "Cold and crisp" },
                 { question: "Beach or countryside?", correct: "Beach" },
                 { question: "Dog or cat person?", correct: "Dog person" },
                 { question: "Sweet or savoury?", correct: "Savoury" },
                 { question: "Morning person or night owl?", correct: "Night owl" },
-                
-                // Travel
                 { question: "What's my dream holiday destination?", correct: "Italy" },
                 { question: "Which UK city do I most want to visit?", correct: "Edinburgh" },
                 { question: "What's my favourite way to travel?", correct: "Train" },
                 { question: "Holiday: packed itinerary or relax?", correct: "Mix of both" },
-                
-                // Career
                 { question: "What did I want to be as a child?", correct: "Vet" },
                 { question: "What do I enjoy most about my current job?", correct: "The challenge" },
                 { question: "What's my biggest work stress?", correct: "Management" },
-                
-                // Quirks
                 { question: "What's my strangest habit?", correct: "Talking to myself" },
                 { question: "Which side of the bed do I sleep on?", correct: "Left side" },
                 { question: "How many alarms do I set?", correct: "3" },
-                
-                // Childhood
                 { question: "What was my favourite cartoon?", correct: "Wallace and Gromit" },
                 { question: "What was my favourite game?", correct: "Video games" },
-                
-                // Personal tastes
                 { question: "What's my favourite scent/perfume?", correct: "Woody" },
                 { question: "What's my favourite colour?", correct: "Purple" },
                 { question: "What time of day do I prefer for intimacy?", correct: "Night time" },
-                
-                // About partner
                 { question: "What do I find most attractive about you?", correct: "Your smile" },
                 { question: "What's your biggest flaw, in my opinion?", correct: "Stubbornness" },
                 { question: "What do I miss most when you're away?", correct: "Your touch" }
             ];
 
-            // DOM elements
-            const playerScreen = document.getElementById('playerScreen');
+            // DOM Elements
+            const landingScreen = document.getElementById('landingScreen');
+            const setupScreen = document.getElementById('setupScreen');
             const gameScreen = document.getElementById('gameScreen');
             const resultScreen = document.getElementById('resultScreen');
-            const player1Name = document.getElementById('player1Name');
-            const player2Name = document.getElementById('player2Name');
-            const displayPlayer1 = document.getElementById('displayPlayer1');
-            const displayPlayer2 = document.getElementById('displayPlayer2');
-            const finalName1 = document.getElementById('finalName1');
-            const finalName2 = document.getElementById('finalName2');
-            const finalScore1 = document.getElementById('finalScore1');
-            const finalScore2 = document.getElementById('finalScore2');
-            const winnerMessage = document.getElementById('winnerMessage');
-            const startGameBtn = document.getElementById('startGameBtn');
-            const gameMain = document.getElementById('gameMain');
-            const questionCounter = document.getElementById('questionCounter');
-            const score1El = document.getElementById('score1');
-            const score2El = document.getElementById('score2');
+            const howToPlayModal = document.getElementById('howToPlayModal');
+
+            const startFlowBtn = document.getElementById('startFlowBtn');
+            const openHowToPlayBtn = document.getElementById('openHowToPlayBtn');
+            const closeHowToPlayBtn = document.getElementById('closeHowToPlayBtn');
+            const confirmPlayersBtn = document.getElementById('confirmPlayersBtn');
+            const finishEarlyBtn = document.getElementById('finishEarlyBtn');
             const resetBtn = document.getElementById('resetBtn');
             const playAgainBtn = document.getElementById('playAgainBtn');
-            const finishTopBtn = document.getElementById('finishTopBtn');
 
-            // Game state
+            const player1NameInput = document.getElementById('player1Name');
+            const player2NameInput = document.getElementById('player2Name');
+            const displayPlayer1 = document.getElementById('displayPlayer1');
+            const displayPlayer2 = document.getElementById('displayPlayer2');
+            const score1El = document.getElementById('score1');
+            const score2El = document.getElementById('score2');
+            const questionCounter = document.getElementById('questionCounter');
+            const questionText = document.getElementById('questionText');
+            const playersArea = document.getElementById('playersArea');
+
+            // Audio Controls
+            const bgMusic = document.getElementById('bgMusic');
+            const sfxClick = document.getElementById('sfxClick');
+            const sfxCorrect = document.getElementById('sfxCorrect');
+            const sfxWrong = document.getElementById('sfxWrong');
+            const sfxWin = document.getElementById('sfxWin');
+            const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+            const audioIcon = document.getElementById('audioIcon');
+            let isMuted = true;
+
+            // Game State Variables
             let remainingQuestions = [];
             let currentQuestion = null;
             let player1Answered = false;
             let player2Answered = false;
             let scores = { player1: 0, player2: 0 };
             let playerNames = { player1: 'Player 1', player2: 'Player 2' };
-            let gameCompleted = false;
             let questionsAnswered = 0;
             let autoNextTimeout = null;
-            const totalQuestions = questions.length;
 
-            startGameBtn.addEventListener('click', () => {
-                playerNames.player1 = player1Name.value.trim() || 'Player 1';
-                playerNames.player2 = player2Name.value.trim() || 'Player 2';
+            // Audio Helper Functions
+            function playSFX(audioElement) {
+                if (!isMuted && audioElement) {
+                    audioElement.currentTime = 0;
+                    audioElement.play().catch(() => {});
+                }
+            }
+
+            toggleAudioBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                if (!isMuted) {
+                    audioIcon.className = 'fa-solid fa-volume-high';
+                    bgMusic.play().catch(() => {});
+                } else {
+                    audioIcon.className = 'fa-solid fa-volume-xmark';
+                    bgMusic.pause();
+                }
+            });
+
+            // Screen Navigation Helper
+            function switchScreen(fromScreen, toScreen) {
+                fromScreen.classList.remove('active');
+                toScreen.classList.add('active');
+            }
+
+            // Função auxiliar para tentar iniciar a música e atualizar o ícone
+function startMusicOnInteraction() {
+    if (isMuted) {
+        isMuted = false;
+        audioIcon.className = 'fa-solid fa-volume-high';
+        bgMusic.play().catch(() => {
+            // Caso o navegador bloqueie por algum motivo, mantêm mutado
+            isMuted = true;
+            audioIcon.className = 'fa-solid fa-volume-xmark';
+        });
+    }
+}
+
+// Navegação inicial + Início da música
+startFlowBtn.addEventListener('click', () => {
+    startMusicOnInteraction();
+    playSFX(sfxClick);
+    switchScreen(landingScreen, setupScreen);
+});
+
+openHowToPlayBtn.addEventListener('click', () => {
+    startMusicOnInteraction();
+    playSFX(sfxClick);
+    howToPlayModal.classList.add('active');
+});
+
+            // Navigation Handlers
+            startFlowBtn.addEventListener('click', () => {
+                playSFX(sfxClick);
+                switchScreen(landingScreen, setupScreen);
+            });
+
+            openHowToPlayBtn.addEventListener('click', () => {
+                playSFX(sfxClick);
+                howToPlayModal.classList.add('active');
+            });
+
+            closeHowToPlayBtn.addEventListener('click', () => {
+                playSFX(sfxClick);
+                howToPlayModal.classList.remove('active');
+            });
+
+            confirmPlayersBtn.addEventListener('click', () => {
+                playSFX(sfxClick);
+                playerNames.player1 = player1NameInput.value.trim() || 'Player 1';
+                playerNames.player2 = player2NameInput.value.trim() || 'Player 2';
                 
                 displayPlayer1.textContent = playerNames.player1;
                 displayPlayer2.textContent = playerNames.player2;
-                
-                playerScreen.classList.add('hidden');
-                gameScreen.classList.add('visible');
-                
+
+                switchScreen(setupScreen, gameScreen);
                 resetGame();
             });
 
-            resetBtn.addEventListener('click', resetGame);
+            finishEarlyBtn.addEventListener('click', () => {
+                playSFX(sfxClick);
+                finalizarJogo();
+            });
+
+            resetBtn.addEventListener('click', () => {
+                playSFX(sfxClick);
+                resetGame();
+            });
+
             playAgainBtn.addEventListener('click', () => {
-                resultScreen.classList.remove('visible');
+                playSFX(sfxClick);
+                switchScreen(resultScreen, gameScreen);
                 resetGame();
             });
 
-            // Top finish button
-            finishTopBtn.addEventListener('click', finalizarJogo);
-
+            // Gameplay Functions
             function resetGame() {
-                // Clear any pending timeout
-                if (autoNextTimeout) {
-                    clearTimeout(autoNextTimeout);
-                    autoNextTimeout = null;
-                }
-                
+                if (autoNextTimeout) clearTimeout(autoNextTimeout);
                 remainingQuestions = [...questions];
                 scores = { player1: 0, player2: 0 };
                 score1El.textContent = '0';
                 score2El.textContent = '0';
-                gameCompleted = false;
                 questionsAnswered = 0;
-                
                 shuffleQuestions();
                 nextQuestion();
             }
@@ -767,110 +874,103 @@
                     finalizarJogo();
                     return;
                 }
-                
+
                 currentQuestion = remainingQuestions.pop();
                 questionsAnswered++;
-                
                 player1Answered = false;
                 player2Answered = false;
-                
-                mostrarPergunta();
+
+                renderQuestion();
             }
 
-            function finalizarJogo() {
-                gameCompleted = true;
-                
-                finalName1.textContent = playerNames.player1;
-                finalName2.textContent = playerNames.player2;
-                finalScore1.textContent = scores.player1;
-                finalScore2.textContent = scores.player2;
-                
-                if (scores.player1 > scores.player2) {
-                    winnerMessage.textContent = `💜 ${playerNames.player1} got more correct answers! ${playerNames.player2} owes ${playerNames.player1} a gift! 💜`;
-                } else if (scores.player2 > scores.player1) {
-                    winnerMessage.textContent = `💜 ${playerNames.player2} got more correct answers! ${playerNames.player1} owes ${playerNames.player2} a gift! 💜`;
-                } else {
-                    winnerMessage.textContent = `💜 It's a tie! You both owe each other a gift! 💜`;
-                }
-                
-                resultScreen.classList.add('visible');
-            }
+            function renderQuestion() {
+                questionCounter.textContent = `Question ${questionsAnswered} of ${questions.length}`;
+                questionText.textContent = currentQuestion.question;
 
-            function mostrarPergunta() {
-                if (!currentQuestion) return;
-                
-                questionCounter.textContent = `Question ${questionsAnswered} of ${totalQuestions}`;
-                
-                let html = `
-                    <!-- Question card -->
-                    <div class="question-card">
-                        <div class="question-text">${currentQuestion.question}</div>
-                    </div>
-                    
-                    <!-- Players area -->
-                    <div class="players-area">
-                        <div class="player-response-card">
-                            <span class="player-response-name">${playerNames.player1}</span>
-                            <div class="response-buttons">
-                                <button class="response-btn correct" data-player="1" data-result="correct">✓ Got it</button>
-                                <button class="response-btn wrong" data-player="1" data-result="wrong">✗ Missed</button>
-                            </div>
+                playersArea.innerHTML = `
+                    <div class="glass-card response-card">
+                        <span class="response-name">${playerNames.player1}</span>
+                        <div class="response-actions">
+                            <button class="action-btn correct" data-player="1" data-result="correct">
+                                <i class="fa-solid fa-check"></i> Got it
+                            </button>
+                            <button class="action-btn wrong" data-player="1" data-result="wrong">
+                                <i class="fa-solid fa-xmark"></i> Missed
+                            </button>
                         </div>
-                        
-                        <div class="player-response-card">
-                            <span class="player-response-name">${playerNames.player2}</span>
-                            <div class="response-buttons">
-                                <button class="response-btn correct" data-player="2" data-result="correct">✓ Got it</button>
-                                <button class="response-btn wrong" data-player="2" data-result="wrong">✗ Missed</button>
-                            </div>
+                    </div>
+                    <div class="glass-card response-card">
+                        <span class="response-name">${playerNames.player2}</span>
+                        <div class="response-actions">
+                            <button class="action-btn correct" data-player="2" data-result="correct">
+                                <i class="fa-solid fa-check"></i> Got it
+                            </button>
+                            <button class="action-btn wrong" data-player="2" data-result="wrong">
+                                <i class="fa-solid fa-xmark"></i> Missed
+                            </button>
                         </div>
                     </div>
                 `;
-                
-                gameMain.innerHTML = html;
-                
-                // Response button events
-                document.querySelectorAll('.response-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const player = parseInt(btn.dataset.player);
-                        const result = btn.dataset.result;
-                        
-                        const playerButtons = document.querySelectorAll(`.response-btn[data-player="${player}"]`);
-                        playerButtons.forEach(b => {
-                            b.classList.add('disabled');
-                        });
-                        
-                        btn.classList.add('selected');
-                        
-                        if (player === 1) {
-                            player1Answered = true;
-                            if (result === 'correct') {
-                                scores.player1 += 1;
-                                score1El.textContent = scores.player1;
-                            }
-                        } else {
-                            player2Answered = true;
-                            if (result === 'correct') {
-                                scores.player2 += 1;
-                                score2El.textContent = scores.player2;
-                            }
-                        }
-                        
-                        // If both answered, auto advance after 0.8 seconds
-                        if (player1Answered && player2Answered) {
-                            if (autoNextTimeout) {
-                                clearTimeout(autoNextTimeout);
-                            }
-                            autoNextTimeout = setTimeout(() => {
-                                if (!gameCompleted) {
-                                    nextQuestion();
-                                }
-                            }, 800);
-                        }
-                    });
+
+                document.querySelectorAll('.action-btn').forEach(btn => {
+                    btn.addEventListener('click', handleResponse);
                 });
             }
 
+            function handleResponse(e) {
+                const btn = e.currentTarget;
+                const player = parseInt(btn.dataset.player);
+                const result = btn.dataset.result;
+
+                if (result === 'correct') {
+                    playSFX(sfxCorrect);
+                } else {
+                    playSFX(sfxWrong);
+                }
+
+                const playerBtns = document.querySelectorAll(`.action-btn[data-player="${player}"]`);
+                playerBtns.forEach(b => b.classList.add('disabled'));
+                btn.classList.add('selected');
+
+                if (player === 1) {
+                    player1Answered = true;
+                    if (result === 'correct') {
+                        scores.player1++;
+                        score1El.textContent = scores.player1;
+                    }
+                } else {
+                    player2Answered = true;
+                    if (result === 'correct') {
+                        scores.player2++;
+                        score2El.textContent = scores.player2;
+                    }
+                }
+
+                if (player1Answered && player2Answered) {
+                    autoNextTimeout = setTimeout(() => {
+                        nextQuestion();
+                    }, 800);
+                }
+            }
+
+            function finalizarJogo() {
+                playSFX(sfxWin);
+                document.getElementById('finalName1').textContent = playerNames.player1;
+                document.getElementById('finalName2').textContent = playerNames.player2;
+                document.getElementById('finalScore1').textContent = scores.player1;
+                document.getElementById('finalScore2').textContent = scores.player2;
+
+                const winnerMessage = document.getElementById('winnerMessage');
+                if (scores.player1 > scores.player2) {
+                    winnerMessage.innerHTML = `💜 <strong>${playerNames.player1}</strong> knows more details! <strong>${playerNames.player2}</strong> owes a treat! 💜`;
+                } else if (scores.player2 > scores.player1) {
+                    winnerMessage.innerHTML = `💜 <strong>${playerNames.player2}</strong> knows more details! <strong>${playerNames.player1}</strong> owes a treat! 💜`;
+                } else {
+                    winnerMessage.innerHTML = `💜 It's a tie! Both of you know each other well! 💜`;
+                }
+
+                switchScreen(gameScreen, resultScreen);
+            }
         })();
     </script>
 </body>
